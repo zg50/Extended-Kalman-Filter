@@ -17,35 +17,50 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
   VectorXd rmse(4);
   rmse<< 0, 00, 0;
 
-  // TODO: YOUR CODE HERE
-  // check the validity of the following inputs:
-  //  * the estimation vector size should not be zero
-  //  * the estimation vector size should equal ground truth vector size
   if (estimations.size() == 0) {
     return rmse;
   }
   if (estimations.size() != ground_truth.size()) {
     return rmse;
   }
-  // TODO: accumulate squared residuals
+ 
   for (int i=0; i < estimations.size(); ++i) {
-    // ... your code here
     VectorXd temp = estimations[i] - ground_truth[i];
     temp = temp.array() * temp.array();
     rmse += temp;
   }
 
-  // TODO: calculate the mean
+
   rmse = rmse / estimations.size();
-  // TODO: calculate the squared root
   rmse = rmse.array().sqrt();
-  // return the result
   return rmse;
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-  /**
-   * TODO:
-   * Calculate a Jacobian here.
-   */
+
+  MatrixXd Hj(3,4);
+  // recover state parameters
+  float px = x_state(0);
+  float py = x_state(1);
+  float vx = x_state(2);
+  float vy = x_state(3);
+
+  // TODO: YOUR CODE HERE
+  float a = px * px + py * py;
+  float b = px * (px * vy - py * vx);
+  float c = py * (py * vx - px * vy);
+
+  // check division by zero
+  if (a == 0) {
+    cout << "division by zero" << endl;
+    return Hj;
+  }
+
+  // compute the Jacobian matrix
+  Hj << px / sqrt(a), py / sqrt(a), 0, 0,
+    -ppy / a, px / a, 0, 0, 
+      c / (a * sqrt(a)), b / (a * sqrt(a)), px / sqrt(a), py / sqrt(a);
+
+  return Hj;
+  
 }
