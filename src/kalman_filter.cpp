@@ -23,8 +23,8 @@ void KalmanFilter::Init(VectorXd &x_in, MatrixXd &P_in, MatrixXd &F_in,
 }
 
 void KalmanFilter::Predict() {
-  x_ =  F * x + u; 
-  P = F * P * F.transpose();
+  x_ =  F_ * x_; 
+  P_ = F_ * P_ * F_.transpose() + Q_;
 }
 
 void KalmanFilter::Update(const VectorXd &z) {
@@ -34,10 +34,10 @@ void KalmanFilter::Update(const VectorXd &z) {
 }
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
-  float px = z(0);
-  float py = z(1);
-  float vx = z(2);
-  float vy = z(3);
+  float px = x_(0);
+  float py = x_(1);
+  float vx = x_(2);
+  float vy = x_(3);
   float range = sqrt(px * px + py * py);
   float angle = atan2 (py, px);
   float rangeRate = (px * vx + py * vy) /  sqrt(px * px + py * py);
@@ -48,19 +48,18 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   		angle -= 2 * M_PI;
   	}
   }
-  h << sqrt(px * px + py * py),  atan2 (py, px), (px * vx + py * vy) /  sqrt(px * px + py * py);
   VectorXd h(3);
+  h << sqrt(px * px + py * py),  atan2 (py, px), (px * vx + py * vy) /  sqrt(px * px + py * py);
   VectorXd y = z - h;
   UpdateHelper(y);
 }
 
-void KalmanFilter::UpdateHelper(const Vector &y) {
+void KalmanFilter::UpdateHelper(const VectorXd &y) {
   MatrixXd Ht = H_.transpose();
   MatrixXd S = H_ * P_ * Ht + R_;
   MatrixXd Si = S.inverse();
   MatrixXd PHt = P_ * Ht;
   MatrixXd K = PHt * Si;
-
   //new estimate
   x_ = x_ + (K * y);
   long x_size = x_.size();

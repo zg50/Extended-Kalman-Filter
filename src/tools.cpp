@@ -24,7 +24,7 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
     return rmse;
   }
  
-  for (int i=0; i < estimations.size(); ++i) {
+  for (unsigned i=0; i < estimations.size(); ++i) {
     VectorXd temp = estimations[i] - ground_truth[i];
     temp = temp.array() * temp.array();
     rmse += temp;
@@ -36,8 +36,12 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 }
 
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
-
+  
   MatrixXd Hj(3,4);
+  if (x_state.size() != 4) {
+	std::cout << "the size of x_state in CalculateJacobian must be 4";
+    return Hj;
+  }
   // recover state parameters
   float px = x_state(0);
   float py = x_state(1);
@@ -48,18 +52,14 @@ MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
   float a = px * px + py * py;
   float b = px * (px * vy - py * vx);
   float c = py * (py * vx - px * vy);
-
   // check division by zero
   if (a == 0) {
-    cout << "division by zero" << endl;
+    std::cout << "division by zero" << std::endl;
     return Hj;
   }
-
   // compute the Jacobian matrix
   Hj << px / sqrt(a), py / sqrt(a), 0, 0,
-    -ppy / a, px / a, 0, 0, 
-      c / (a * sqrt(a)), b / (a * sqrt(a)), px / sqrt(a), py / sqrt(a);
-
+        -py / a, px / a, 0, 0, 
+         c / (a * sqrt(a)), b / (a * sqrt(a)), px / sqrt(a), py / sqrt(a);
   return Hj;
-  
 }
