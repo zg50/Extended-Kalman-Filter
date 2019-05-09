@@ -38,19 +38,21 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
   float py = x_(1);
   float vx = x_(2);
   float vy = x_(3);
+  
   float range = sqrt(px * px + py * py);
   float angle = atan2 (py, px);
   float rangeRate = (px * vx + py * vy) /  sqrt(px * px + py * py);
-  while (angle < -M_PI || angle > M_PI) {
-  	if (angle < -M_PI) {
-  		angle += 2 * M_PI;
-  	} else if (angle > M_PI) {
-  		angle -= 2 * M_PI;
-  	}
-  }
   VectorXd h(3);
-  h << sqrt(px * px + py * py),  atan2 (py, px), (px * vx + py * vy) /  sqrt(px * px + py * py);
+  h << range, angle, rangeRate;
   VectorXd y = z - h;
+
+  while ( y(1) > M_PI || y(1) < -M_PI ) {
+    if ( y(1) > M_PI ) {
+      y(1) -= 2 * M_PI;
+    } else {
+      y(1) += 2 * M_PI;
+    }
+  }
   UpdateHelper(y);
 }
 

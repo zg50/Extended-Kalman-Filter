@@ -73,8 +73,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       float range = measurement_pack.raw_measurements_(0);
       float angle = measurement_pack.raw_measurements_(1);
       float rangeRate = measurement_pack.raw_measurements_(2);
+      
       float px_init = range * cos(angle);
+      if (px_init < 0.0001) {
+        px_init = 0.0001;
+      }
       float py_init = range * sin(angle);
+      if (py_init < 0.0001) {
+        py_init = 0.0001;
+      }
       float vx_init = rangeRate * cos(angle);
       float vy_init = rangeRate * sin(angle);
       
